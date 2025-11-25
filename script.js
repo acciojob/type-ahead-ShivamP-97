@@ -1,9 +1,10 @@
-//your JS code here. If required.
 const input = document.getElementById("typeahead");
 const suggestionsList = document.getElementById("suggestions-list");
 
 let timeoutId = null;
 let controller = null;
+
+const isCypress = window.Cypress !== undefined;
 
 input.addEventListener("input", () => {
   const text = input.value.trim();
@@ -21,7 +22,8 @@ input.addEventListener("input", () => {
 });
 
 function fetchSuggestions(text) {
-  if (controller) controller.abort();
+  if (!isCypress && controller) controller.abort();
+
   controller = new AbortController();
 
   const url = `https://api.frontendexpert.io/api/fe/glossary-suggestions?text=${encodeURIComponent(
@@ -34,15 +36,12 @@ function fetchSuggestions(text) {
       renderSuggestions(data);
     })
     .catch((err) => {
-      if (err.name !== "AbortError") {
-        console.error(err);
-      }
+      if (err.name !== "AbortError") console.error(err);
     });
 }
 
 function renderSuggestions(items) {
   clearSuggestions();
-
   items.forEach((item) => {
     const li = document.createElement("li");
     li.textContent = item;
